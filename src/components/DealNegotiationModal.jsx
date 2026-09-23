@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { 
   X, Phone, MessageSquare, Send, CheckCircle2, ShieldCheck, 
-  DollarSign, Clock, MapPin, Fuel, AlertCircle, PhoneCall 
+  DollarSign, Clock, MapPin, Fuel, AlertCircle, PhoneCall, QrCode 
 } from 'lucide-react';
+import { PAKISTANI_PAYMENT_METHODS, URDU_QUICK_CHATS } from '../data/mockData';
 
 export default function DealNegotiationModal({
   isOpen,
@@ -14,24 +15,27 @@ export default function DealNegotiationModal({
   userLocation,
   vehicleDetails,
   roadsideNote,
-  onConfirmDeal
+  onConfirmDeal,
+  lang = 'en'
 }) {
   if (!isOpen || !rider) return null;
 
   const [deliveryFee, setDeliveryFee] = useState(rider.baseDeliveryFee);
   const [tipSurge, setTipSurge] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('cod'); // cod, card, mobile_wallet
+  const [paymentMethod, setPaymentMethod] = useState('cod'); // cod, jazzcash, easypaisa, sadapay_nayapay
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'rider',
-      text: `Hello! I see you need ${quantityLiters}L of ${fuelName}. I have sealed DOT canisters ready on my bike and can reach you in ~${rider.etaMinutes} minutes.`,
+      text: `Assalam-o-Alaikum! I have ${quantityLiters}L of ${fuelName} ready in an OGRA-certified sealed safety jerrycan. I am approximately ${rider.etaMinutes} minutes away from your location.`,
+      urduText: `السلام علیکم! میرے پاس ${quantityLiters} لیٹر فیول اوگرا تصدیق شدہ کین میں تیار ہے۔ میں تقریباً ${rider.etaMinutes} منٹ میں پہنچ سکتا ہوں۔`,
       time: 'Just now'
     },
     {
       id: 2,
       sender: 'user',
-      text: `Hi ${rider.name}, I am stranded at ${userLocation.address || 'Highway shoulder'} with ${vehicleDetails || 'my car'}. Please hurry!`,
+      text: `Walaikum Assalam ${rider.name}, I am stranded at ${userLocation.address || 'Roadside'}. Please dispatch quickly!`,
+      urduText: `وعلیکم السلام، میں اس وقت روڈ پر پھنسا ہوں۔ برائے مہربانی جلدی پہنچیں۔`,
       time: 'Just now'
     }
   ]);
@@ -39,13 +43,6 @@ export default function DealNegotiationModal({
   const [callingState, setCallingState] = useState(false);
 
   const grandTotal = fuelSubtotal + deliveryFee + tipSurge;
-
-  const quickReplies = [
-    `I am in a ${vehicleDetails || 'car'} with hazard lights blinking.`,
-    'Is your fuel canister fresh & sealed with security tag?',
-    'Please bring an emergency funnel if available.',
-    'I will pay cash on arrival, please rush!'
-  ];
 
   const handleSend = (textToSend) => {
     const text = textToSend || inputMsg;
@@ -60,14 +57,18 @@ export default function DealNegotiationModal({
     setMessages(prev => [...prev, newMsg]);
     if (!textToSend) setInputMsg('');
 
-    // Rider automated response simulation
+    // Rider automated response simulation in Pakistani roadside context
     setTimeout(() => {
-      let reply = 'Copy that! I have locked your GPS pin and I am fastening the fuel containers.';
-      if (text.toLowerCase().includes('sealed') || text.toLowerCase().includes('funnel')) {
-        reply = '100% sealed factory containers with safety spout and spill-proof funnel included!';
-      } else if (text.toLowerCase().includes('cash')) {
-        reply = 'Cash is great, exact change or large bills accepted. Finalize the deal button and I roll!';
+      let reply = 'Bhai GPS lock hogaya hai! Main fuel canister secure karke direct nikal raha hoon.';
+      const lower = text.toLowerCase();
+      if (lower.includes('bottle') || lower.includes('sealed') || lower.includes('کین')) {
+        reply = '100% sealed anti-spill OGRA jerrycan aur funnel mere paas hai, no open plastic bottles!';
+      } else if (lower.includes('jazzcash') || lower.includes('easypaisa') || lower.includes('cash') || lower.includes('پیسہ')) {
+        reply = 'Theek hai bhai! JazzCash, Easypaisa ya Cash donon available hain. Screen par confirm karein aur main pohanchta hoon!';
+      } else if (lower.includes('change') || lower.includes('baqaya') || lower.includes('کھلے')) {
+        reply = 'Baqaya khulay change Rs. 500 aur Rs. 100 kay notes mere paas hain, tension na lein.';
       }
+
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'rider',
@@ -80,14 +81,36 @@ export default function DealNegotiationModal({
   const handleCallSimulate = () => {
     setCallingState(true);
     setTimeout(() => {
-      alert(`Connected to ${rider.name} (${rider.phone}).\n\nRider says: "I see your coordinates near ${userLocation.address}. I am packing your ${quantityLiters}L ${fuelName} right now. Please confirm the order on the screen!"`);
+      alert(`Connected to ${rider.name} (${rider.phone}).\n\nRider says: "Assalam-o-Alaikum! Main aapki location dekh raha hoon (${userLocation.address}). Mera bike nikal chuka hai. Mobile screen par deal confirm karein aur 4-digit OTP note kar lein!"`);
       setCallingState(false);
     }, 1500);
   };
 
+  const handleFinalize = () => {
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const dealData = {
+      riderId: rider.id,
+      riderName: rider.name,
+      riderUrduName: rider.urduName,
+      riderPhone: rider.phone,
+      riderPhoto: rider.photo,
+      riderVehicle: rider.vehicle,
+      fuelName,
+      quantityLiters,
+      grandTotal,
+      paymentMethod,
+      userLocation,
+      vehicleDetails,
+      roadsideNote,
+      etaMinutes: rider.etaMinutes,
+      otp
+    };
+    onConfirmDeal(dealData);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-6">
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-6 animate-fadeIn">
         
         {/* Header */}
         <div className="bg-slate-950 px-5 py-4 border-b border-slate-800 flex items-center justify-between">
@@ -95,16 +118,18 @@ export default function DealNegotiationModal({
             <img
               src={rider.photo}
               alt={rider.name}
-              className="w-10 h-10 rounded-xl object-cover border border-amber-500/40"
+              className="w-11 h-11 rounded-2xl object-cover border border-amber-500/40"
             />
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-white text-sm sm:text-base">{rider.name}</h3>
+                <h3 className="font-bold text-white text-sm sm:text-base">
+                  {lang === 'ur' ? rider.urduName : rider.name}
+                </h3>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.2 rounded-full">
                   Online &bull; {rider.distanceKm} km away
                 </span>
               </div>
-              <p className="text-xs text-slate-400">{rider.vehicle} &bull; {rider.verifiedBadge}</p>
+              <p className="text-xs text-slate-400">{rider.phone} &bull; {rider.vehicle}</p>
             </div>
           </div>
 
@@ -112,11 +137,11 @@ export default function DealNegotiationModal({
             <button
               onClick={handleCallSimulate}
               disabled={callingState}
-              className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition text-xs font-semibold flex items-center gap-1.5"
-              title="Voice Call Rider"
+              className="p-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition text-xs font-bold flex items-center gap-1.5"
+              title="Call Rider Phone"
             >
-              <PhoneCall className={`w-4 h-4 ${callingState ? 'animate-bounce' : ''}`} />
-              <span className="hidden sm:inline">{callingState ? 'Calling...' : 'Call Rider'}</span>
+              <PhoneCall className={`w-3.5 h-3.5 ${callingState ? 'animate-bounce' : ''}`} />
+              <span>{callingState ? 'Calling...' : `Call (${rider.phone})`}</span>
             </button>
 
             <button
@@ -128,14 +153,14 @@ export default function DealNegotiationModal({
           </div>
         </div>
 
-        {/* Content Body: Chat + Deal Terms */}
+        {/* Content Body */}
         <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
           
-          {/* Deal Pricing Summary Card */}
+          {/* Deal Pricing Summary Card in PKR */}
           <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Agreed Roadside Rescue Deal
+                {lang === 'ur' ? 'آرڈر اور ریٹس کا خلاصہ (پاکستانی روپے)' : 'Emergency Roadside Deal (PKR)'}
               </span>
               <span className="text-xs font-mono text-amber-400 font-bold">
                 ETA ~{rider.etaMinutes} mins
@@ -144,24 +169,24 @@ export default function DealNegotiationModal({
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
               <div>
-                <span className="text-slate-500 block">Fuel Ordered:</span>
-                <span className="font-semibold text-slate-200">{quantityLiters}L &bull; {fuelName}</span>
+                <span className="text-slate-500 block">Fuel Requested:</span>
+                <span className="font-semibold text-slate-200">{quantityLiters} Litres &bull; {fuelName.split('(')[0]}</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Fuel Cost:</span>
-                <span className="font-semibold text-slate-200">${fuelSubtotal.toFixed(2)}</span>
+                <span className="text-slate-500 block">Fuel Subtotal:</span>
+                <span className="font-semibold text-slate-200 font-mono">Rs. {Math.round(fuelSubtotal).toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Emergency Delivery Fee:</span>
-                <span className="font-semibold text-slate-200">${deliveryFee.toFixed(2)}</span>
+                <span className="text-slate-500 block">Rider Dispatch Fee:</span>
+                <span className="font-semibold text-slate-200 font-mono">Rs. {deliveryFee}</span>
               </div>
             </div>
 
-            {/* Optional Rush Tip / Surge */}
-            <div className="pt-2 flex items-center justify-between">
-              <span className="text-xs text-slate-400">Add Priority Rush Bonus:</span>
+            {/* Optional Rush Tip in PKR */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs text-slate-400">Add Priority Rush Bonus / Tip (Bhai ki Chai):</span>
               <div className="flex gap-1.5">
-                {[0, 2, 5].map(bonus => (
+                {[0, 100, 250, 500].map(bonus => (
                   <button
                     key={bonus}
                     type="button"
@@ -172,7 +197,7 @@ export default function DealNegotiationModal({
                         : 'bg-slate-850 text-slate-300 border border-slate-800'
                     }`}
                   >
-                    {bonus === 0 ? 'None' : `+$${bonus}`}
+                    {bonus === 0 ? 'Rs. 0' : `+Rs. ${bonus}`}
                   </button>
                 ))}
               </div>
@@ -180,56 +205,39 @@ export default function DealNegotiationModal({
 
             <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-400 block">Final Agreed Price:</span>
-                <span className="text-xs text-slate-500">Includes sealed canister & delivery</span>
+                <span className="text-xs text-slate-400 block">Total Payable to Courier:</span>
+                <span className="text-[11px] text-emerald-400 font-medium">OGRA certified sealed canister included</span>
               </div>
               <div className="text-right">
                 <span className="text-2xl font-black text-amber-400 font-mono">
-                  ${grandTotal.toFixed(2)}
+                  Rs. {Math.round(grandTotal).toLocaleString()}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Payment Method Selector */}
+          {/* Pakistani Payment Method Selector */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Payment Method Upon Arrival
+              {lang === 'ur' ? 'طریقہ ادائیگی منتخب کریں' : 'Choose Pakistani Payment Method Upon Arrival'}
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('cod')}
-                className={`p-2.5 rounded-xl border text-xs font-semibold transition text-center ${
-                  paymentMethod === 'cod'
-                    ? 'bg-amber-500/10 border-amber-500 text-amber-300 ring-1 ring-amber-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                💵 Cash on Delivery
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('card')}
-                className={`p-2.5 rounded-xl border text-xs font-semibold transition text-center ${
-                  paymentMethod === 'card'
-                    ? 'bg-amber-500/10 border-amber-500 text-amber-300 ring-1 ring-amber-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                💳 Debit/Credit Card
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('mobile_wallet')}
-                className={`p-2.5 rounded-xl border text-xs font-semibold transition text-center ${
-                  paymentMethod === 'mobile_wallet'
-                    ? 'bg-amber-500/10 border-amber-500 text-amber-300 ring-1 ring-amber-500/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                📱 Mobile UPI / Wallet
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {PAKISTANI_PAYMENT_METHODS.map(pay => (
+                <button
+                  key={pay.id}
+                  type="button"
+                  onClick={() => setPaymentMethod(pay.id)}
+                  className={`p-2.5 rounded-xl border text-xs font-semibold transition flex flex-col items-center justify-center text-center gap-1 ${
+                    paymentMethod === pay.id
+                      ? 'bg-amber-500/15 border-amber-500 text-amber-300 ring-1 ring-amber-500/40'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span className="text-lg">{pay.icon}</span>
+                  <span className="font-bold leading-tight">{pay.name.split('(')[0]}</span>
+                  <span className="text-[9px] text-slate-500">{pay.badge}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -238,9 +246,9 @@ export default function DealNegotiationModal({
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
-                <span>Live Chat with Rider</span>
+                <span>{lang === 'ur' ? 'رائڈر سے لائیو چیٹ' : 'Live Chat with Rider'}</span>
               </span>
-              <span className="text-[11px] text-emerald-400 font-mono">Encrypted &bull; Direct Channel</span>
+              <span className="text-[11px] text-emerald-400 font-mono">Direct &bull; End-to-End</span>
             </div>
 
             {/* Chat Messages Log */}
@@ -264,16 +272,17 @@ export default function DealNegotiationModal({
               ))}
             </div>
 
-            {/* Quick replies pills */}
+            {/* Quick replies in Urdu & Roman Urdu */}
             <div className="flex flex-wrap gap-1.5 pt-1">
-              {quickReplies.map((q, idx) => (
+              {URDU_QUICK_CHATS.map((q, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => handleSend(q)}
-                  className="text-[11px] bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-lg px-2.5 py-1 text-left transition"
+                  onClick={() => handleSend(q.labelRoman)}
+                  className="text-[11px] bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-lg px-2.5 py-1 text-left transition flex items-center gap-1"
                 >
-                  {q}
+                  <span className="text-amber-400 font-bold">•</span>
+                  <span>{q.labelUrdu}</span>
                 </button>
               ))}
             </div>
@@ -285,7 +294,7 @@ export default function DealNegotiationModal({
                 value={inputMsg}
                 onChange={(e) => setInputMsg(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Type instructions or negotiate deal..."
+                placeholder="Type message or ask rider (e.g. Bhai kahan pohnchay)..."
                 className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
               />
               <button
@@ -304,39 +313,27 @@ export default function DealNegotiationModal({
         <div className="bg-slate-950 p-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-center sm:text-left">
             <span className="text-xs text-slate-400">Total payable on delivery: </span>
-            <span className="text-lg font-black text-amber-400 font-mono">${grandTotal.toFixed(2)}</span>
+            <span className="text-lg font-black text-amber-400 font-mono">
+              Rs. {Math.round(grandTotal).toLocaleString()}
+            </span>
           </div>
 
           <div className="flex gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition"
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition"
             >
               Cancel
             </button>
+
             <button
               type="button"
-              onClick={() => onConfirmDeal({
-                riderId: rider.id,
-                riderName: rider.name,
-                riderPhone: rider.phone,
-                riderPhoto: rider.photo,
-                riderVehicle: rider.vehicle,
-                fuelName,
-                quantityLiters,
-                grandTotal,
-                paymentMethod,
-                userLocation,
-                vehicleDetails,
-                roadsideNote,
-                etaMinutes: rider.etaMinutes,
-                otp: Math.floor(1000 + Math.random() * 9000).toString()
-              })}
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2"
+              onClick={handleFinalize}
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Finalize Deal & Dispatch Rider</span>
+              <span>Confirm & Lock Dispatch</span>
             </button>
           </div>
         </div>

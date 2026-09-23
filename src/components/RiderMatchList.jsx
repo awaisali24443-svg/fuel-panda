@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bike, Star, Clock, Navigation, CheckCircle2, ShieldCheck, Zap, Phone, MessageSquare } from 'lucide-react';
+import { Bike, Star, Clock, Navigation, CheckCircle2, ShieldCheck, Zap, Phone, MessageSquare, MapPin } from 'lucide-react';
 
 export default function RiderMatchList({
   riders,
@@ -8,28 +8,31 @@ export default function RiderMatchList({
   onInitiateDeal,
   fuelSubtotal,
   quantityLiters,
-  fuelName
+  fuelName,
+  lang = 'en'
 }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <span>Nearby Mobile Fuel Tankers</span>
+            <span>{lang === 'ur' ? 'قریبی تصدیق شدہ رائڈرز' : 'Nearest Verified Fuel Couriers'}</span>
             <span className="text-xs bg-amber-500/20 text-amber-300 font-mono px-2 py-0.5 rounded-full border border-amber-500/30">
-              {riders.length} Active
+              {riders.length} Active in Pakistan
             </span>
           </h2>
-          <p className="text-xs text-slate-400">Select closest rider or let system auto-assign</p>
+          <p className="text-xs text-slate-400">
+            {lang === 'ur' ? 'اوگرا اور پولیس ویریفائیڈ رائڈرز' : 'OGRA & Police verified emergency fuel fleet'}
+          </p>
         </div>
 
         {riders.length > 0 && (
           <button
             onClick={() => onInitiateDeal(riders[0])}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-orange-500/25"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-orange-500/25 shrink-0"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>Instant Auto-Dispatch (Fastest)</span>
+            <span>{lang === 'ur' ? 'فوری خودکار ڈسپیچ' : 'Instant Auto-Dispatch (Fastest)'}</span>
           </button>
         )}
       </div>
@@ -53,7 +56,7 @@ export default function RiderMatchList({
               {index === 0 && (
                 <div className="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Zap className="w-2.5 h-2.5" />
-                  <span>CLOSEST &bull; {rider.etaMinutes} MIN</span>
+                  <span>FASTEST &bull; {rider.etaMinutes} MINS</span>
                 </div>
               )}
 
@@ -66,10 +69,15 @@ export default function RiderMatchList({
                   />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-slate-100 text-sm">{rider.name}</h3>
-                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" title="Verified Carrier" />
+                      <h3 className="font-bold text-slate-100 text-sm">
+                        {lang === 'ur' ? rider.urduName : rider.name}
+                      </h3>
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" title="CNIC & Police Verified" />
+                      <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-mono">
+                        {rider.city}
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-400">{rider.vehicle}</p>
+                    <p className="text-xs text-slate-400 leading-tight mt-0.5">{rider.vehicle}</p>
 
                     <div className="flex items-center gap-2 mt-1 text-xs">
                       <span className="flex items-center gap-1 text-amber-400 font-semibold">
@@ -86,7 +94,7 @@ export default function RiderMatchList({
                   <div>
                     <span className="text-[10px] text-slate-400 block">ETA</span>
                     <span className="text-xs font-black text-amber-400 font-mono">
-                      {rider.etaMinutes} mins
+                      ~{rider.etaMinutes} mins
                     </span>
                   </div>
                   <div>
@@ -96,17 +104,19 @@ export default function RiderMatchList({
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block">Delivery Fee</span>
+                    <span className="text-[10px] text-slate-400 block">Rider Fee</span>
                     <span className="text-xs font-bold text-slate-200 font-mono">
-                      ${rider.baseDeliveryFee.toFixed(2)}
+                      Rs. {rider.baseDeliveryFee}
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
-                  <span className="text-emerald-400 font-medium">✓ Ready to dispatch {quantityLiters}L {fuelName}</span>
-                  <span className="text-slate-400 font-mono font-bold text-xs">
-                    Est. Total: ${totalEstimatedDeal.toFixed(2)}
+                  <span className="text-emerald-400 font-medium">
+                    ✓ {quantityLiters}L {fuelName.split('(')[0]} ready
+                  </span>
+                  <span className="text-amber-300 font-mono font-bold text-xs">
+                    Est. Total: Rs. {Math.round(totalEstimatedDeal).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -122,7 +132,7 @@ export default function RiderMatchList({
                   className="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/10"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Contact & Finalize Deal</span>
+                  <span>{lang === 'ur' ? 'رابطہ اور آرڈر کنفرم کریں' : 'Contact & Finalize Deal'}</span>
                 </button>
               </div>
 

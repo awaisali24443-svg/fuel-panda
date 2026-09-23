@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, X, Volume2, VolumeX, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, X, Volume2, VolumeX, ShieldAlert, CheckCircle2, Phone } from 'lucide-react';
 
 export default function HazardStrobeModal({ isOpen, onClose }) {
   const [strobeActive, setStrobeActive] = useState(true);
@@ -41,7 +41,7 @@ export default function HazardStrobeModal({ isOpen, onClose }) {
           </h2>
 
           <p className="text-sm sm:text-base font-semibold max-w-sm mx-auto opacity-90">
-            Prop your phone against your rear windshield or hazard triangle facing oncoming traffic to alert approaching vehicles.
+            Prop your phone against your rear windshield or hazard triangle facing oncoming traffic to alert approaching vehicles on Motorway / Ring Road.
           </p>
 
           <div className="pt-4 flex flex-wrap gap-2 justify-center">
@@ -62,6 +62,14 @@ export default function HazardStrobeModal({ isOpen, onClose }) {
             >
               Speed: {flashSpeed.toUpperCase()}
             </button>
+
+            <a
+              href="tel:130"
+              className="px-4 py-2.5 rounded-xl font-bold text-xs bg-rose-600 hover:bg-rose-500 text-white flex items-center gap-1.5 shadow-lg shadow-rose-600/30"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span>Call Motorway Police (130)</span>
+            </a>
           </div>
         </div>
       </div>
@@ -72,10 +80,10 @@ export default function HazardStrobeModal({ isOpen, onClose }) {
           <div className="space-y-1 text-center sm:text-left">
             <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
               <ShieldAlert className="w-4 h-4" />
-              <span>Critical Highway Safety Rules:</span>
+              <span>Critical Pakistan Highway Safety Rules:</span>
             </div>
             <p className="text-xs text-slate-400">
-              1. Exit vehicle from passenger side &bull; 2. Stand safely behind metal crash barrier &bull; 3. Never attempt to siphon fuel on active lanes
+              1. Stay behind steel guardrail on M-2 / M-9 shoulder &bull; 2. Lock doors if stranded in unlit area &bull; 3. Strictly no plastic bottle fuel
             </p>
           </div>
 

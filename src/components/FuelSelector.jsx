@@ -1,6 +1,6 @@
 import React from 'react';
 import { FUEL_TYPES, QUANTITIES, VEHICLE_TYPES } from '../data/mockData';
-import { Fuel, Droplets, Zap, Shield, Sparkles } from 'lucide-react';
+import { Fuel, Droplets, Zap, Shield, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function FuelSelector({
   selectedFuel,
@@ -12,34 +12,40 @@ export default function FuelSelector({
   isCustomQty,
   setIsCustomQty,
   selectedVehicleType,
-  setSelectedVehicleType
+  setSelectedVehicleType,
+  lang = 'en'
 }) {
   const currentFuel = FUEL_TYPES.find(f => f.id === selectedFuel) || FUEL_TYPES[0];
   const liters = isCustomQty ? customLiters : selectedQuantity;
   const fuelSubtotal = liters * currentFuel.pricePerLiter;
-  const canisterSafetyDeposit = 2.00; // Returnable sealed jerrycan fee
+  const canisterSafetyDeposit = 500; // in PKR - returnable certified Jerrycan deposit
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-6">
       
       {/* Step 1: Vehicle Type */}
       <div className="space-y-3">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-          1. Select Vehicle Type
-        </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            {lang === 'ur' ? '۱. گاڑی / سواری کی قسم منتخب کریں' : '1. Select Vehicle Type'}
+          </label>
+          <span className="text-xs text-amber-400 font-medium">Bikes, Sedans & Commercial</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
           {VEHICLE_TYPES.map(v => (
             <button
               key={v.id}
               onClick={() => setSelectedVehicleType(v.id)}
-              className={`p-3 rounded-2xl border text-center transition flex flex-col items-center gap-1.5 ${
+              className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 ${
                 selectedVehicleType === v.id
-                  ? 'bg-amber-500/10 border-amber-500 text-amber-300 ring-1 ring-amber-500/50'
+                  ? 'bg-amber-500/15 border-amber-500 text-amber-300 ring-1 ring-amber-500/50'
                   : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
               }`}
             >
               <span className="text-2xl">{v.icon}</span>
-              <span className="text-xs font-semibold">{v.label}</span>
+              <span className="text-[11px] font-bold leading-tight">
+                {lang === 'ur' ? v.urdu : v.label.split('/')[0]}
+              </span>
             </button>
           ))}
         </div>
@@ -49,9 +55,12 @@ export default function FuelSelector({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            2. Choose Fuel Grade
+            {lang === 'ur' ? '۲. ایندھن کا انتخاب کریں (اوگرا تصدیق شدہ)' : '2. Choose Fuel Grade (OGRA Certified)'}
           </label>
-          <span className="text-xs text-amber-400 font-medium">Sealed & Filtered Pure Fuel</span>
+          <span className="text-xs text-emerald-400 font-mono font-semibold flex items-center gap-1">
+            <Shield className="w-3.5 h-3.5" />
+            <span>Pure Fuel Guarantee</span>
+          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -63,7 +72,7 @@ export default function FuelSelector({
                 onClick={() => setSelectedFuel(f.id)}
                 className={`p-4 rounded-2xl border cursor-pointer transition relative overflow-hidden ${
                   isSelected
-                    ? 'bg-slate-850 border-amber-500 shadow-md ring-1 ring-amber-500/50'
+                    ? 'bg-slate-850 border-amber-500 shadow-lg ring-1 ring-amber-500/50'
                     : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
                 }`}
               >
@@ -77,18 +86,22 @@ export default function FuelSelector({
 
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                      {f.badge}
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-amber-300 border border-slate-700">
+                      {lang === 'ur' ? f.urduBadge : f.badge}
                     </span>
-                    <h3 className="font-bold text-sm sm:text-base text-white mt-1.5">{f.name}</h3>
-                    <p className="text-xs text-slate-400 mt-0.5 leading-snug line-clamp-2">{f.description}</p>
+                    <h3 className="font-bold text-sm sm:text-base text-white mt-1.5">
+                      {lang === 'ur' ? f.urduName : f.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5 leading-snug line-clamp-2">
+                      {lang === 'ur' ? f.urduDescription : f.description}
+                    </p>
                   </div>
                 </div>
 
                 <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                  <span className="text-xs text-slate-400">Station Rate:</span>
+                  <span className="text-xs text-slate-400">Govt / PSO Rate:</span>
                   <span className="text-sm font-extrabold text-amber-400 font-mono">
-                    ${f.pricePerLiter.toFixed(2)} / {f.unit}
+                    Rs. {f.pricePerLiter.toFixed(2)} / {f.unit}
                   </span>
                 </div>
               </div>
@@ -101,18 +114,18 @@ export default function FuelSelector({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            3. Select Quantity (DOT Approved Jerrycan)
+            {lang === 'ur' ? '۳. مقدار منتخب کریں (سیل بند جیریکن)' : '3. Select Canister Quantity (OGRA Sealed Jerry Can)'}
           </label>
           <button
             onClick={() => setIsCustomQty(!isCustomQty)}
             className="text-xs text-amber-400 hover:underline font-semibold"
           >
-            {isCustomQty ? 'Choose Presets' : 'Custom Liters'}
+            {isCustomQty ? 'Choose Presets' : 'Custom Litres'}
           </button>
         </div>
 
         {!isCustomQty ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
             {QUANTITIES.map(q => {
               const isSelected = selectedQuantity === q.liters;
               return (
@@ -121,7 +134,7 @@ export default function FuelSelector({
                   onClick={() => setSelectedQuantity(q.liters)}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition text-left flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-amber-500/10 border-amber-500 text-white ring-1 ring-amber-500/50'
+                      ? 'bg-amber-500/15 border-amber-500 text-white ring-1 ring-amber-500/50'
                       : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
                   }`}
                 >
@@ -134,10 +147,12 @@ export default function FuelSelector({
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 leading-tight">{q.desc}</p>
+                    <p className="text-xs text-slate-400 mt-1 leading-tight">
+                      {lang === 'ur' ? q.urduDesc : q.desc}
+                    </p>
                   </div>
                   <div className="mt-3 text-[11px] text-slate-500 font-mono">
-                    Recommended: {q.recommendedFor}
+                    {q.recommendedFor}
                   </div>
                 </div>
               );
@@ -146,12 +161,12 @@ export default function FuelSelector({
         ) : (
           <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-300">Custom Emergency Liters:</span>
-              <span className="text-xl font-black text-amber-400 font-mono">{customLiters} Liters</span>
+              <span className="text-xs text-slate-300">Custom Emergency Litres:</span>
+              <span className="text-xl font-black text-amber-400 font-mono">{customLiters} Litres</span>
             </div>
             <input
               type="range"
-              min="3"
+              min="2"
               max="40"
               step="1"
               value={customLiters}
@@ -159,27 +174,27 @@ export default function FuelSelector({
               className="w-full accent-amber-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-              <span>3L (Moped)</span>
-              <span>15L (Sedan)</span>
-              <span>40L (SUV / Pickup)</span>
+              <span>2L (CD70)</span>
+              <span>10L (Alto/Corolla)</span>
+              <span>40L (Revo/Hilux/Truck)</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Fuel Cost Summary Strip */}
+      {/* Fuel Cost Summary Strip in PKR */}
       <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 text-slate-400">
           <Droplets className="w-4 h-4 text-amber-400" />
           <span>
-            Fuel Subtotal ({liters}L x ${currentFuel.pricePerLiter.toFixed(2)}):
+            Fuel Subtotal ({liters}L x Rs. {currentFuel.pricePerLiter.toFixed(2)}):
           </span>
-          <span className="font-bold text-slate-200">${fuelSubtotal.toFixed(2)}</span>
+          <span className="font-bold text-amber-300 text-sm font-mono">Rs. {fuelSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
         </div>
         <div className="flex items-center gap-2 text-slate-400">
           <Shield className="w-4 h-4 text-emerald-400" />
-          <span>Sealed Canister Deposit: </span>
-          <span className="font-bold text-slate-200">${canisterSafetyDeposit.toFixed(2)} (Refundable)</span>
+          <span>Canister Deposit: </span>
+          <span className="font-bold text-slate-200">Rs. {canisterSafetyDeposit} (Refundable on Jerrycan Return)</span>
         </div>
       </div>
 

@@ -40,7 +40,6 @@ export default function InteractiveRadarMap({
 
   // Relative positions for riders based on their distance
   const riderPositions = riders.map((r, index) => {
-    // Generate deterministic relative coordinates around center
     const angles = [45, 140, 220, 310];
     const angleRad = (angles[index % angles.length] * Math.PI) / 180;
     const distanceScale = 30 + r.distanceKm * 28;
@@ -59,22 +58,19 @@ export default function InteractiveRadarMap({
   return (
     <div className="relative w-full h-[380px] sm:h-[440px] bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
       
-      {/* High-tech Map Background Grids & Highway lines */}
+      {/* Map SVG Canvas */}
       <svg className="w-full h-full" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
         <defs>
-          {/* Radial radar glow */}
           <radialGradient id="radarGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.15" />
-            <stop offset="60%" stopColor="#f59e0b" stopOpacity="0.03" />
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.18" />
+            <stop offset="60%" stopColor="#f59e0b" stopOpacity="0.04" />
             <stop offset="100%" stopColor="#0f172a" stopOpacity="0" />
           </radialGradient>
 
-          {/* Grid pattern */}
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
             <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" strokeWidth="0.8" opacity="0.6" />
           </pattern>
 
-          {/* Route glow filter */}
           <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
@@ -85,15 +81,38 @@ export default function InteractiveRadarMap({
         <rect width="600" height="400" fill="#0b1120" />
         <rect width="600" height="400" fill="url(#grid)" />
 
-        {/* Stylized Highway Routes */}
+        {/* Pakistani Highway Routes (e.g. M-9 / M-2 / Shahrah-e-Faisal / Ring Road) */}
         <path d="M -50 180 Q 200 160 300 200 T 650 250" fill="none" stroke="#334155" strokeWidth="18" opacity="0.5" />
         <path d="M -50 180 Q 200 160 300 200 T 650 250" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" opacity="0.8" />
         
-        {/* Secondary Cross Road */}
+        {/* Highway Label */}
+        <text x="70" y="165" fill="#94a3b8" fontSize="8" fontWeight="bold" letterSpacing="1">M-2 / M-9 / N-5 GT ROAD</text>
+        <text x="440" y="235" fill="#94a3b8" fontSize="8" fontWeight="bold" letterSpacing="1">RING ROAD / EXPRESSWAY</text>
+
+        {/* Cross Arterial Road */}
         <path d="M 180 -20 Q 240 180 300 200 T 420 420" fill="none" stroke="#1e293b" strokeWidth="10" opacity="0.6" />
         <path d="M 180 -20 Q 240 180 300 200 T 420 420" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="4,4" opacity="0.5" />
 
-        {/* Distance Range Rings (1km, 2.5km, 5km) */}
+        {/* Pakistani Landmarks on Map */}
+        <g opacity="0.75">
+          {/* PSO Station */}
+          <rect x="130" y="115" width="68" height="18" rx="4" fill="#047857" opacity="0.85" />
+          <text x="164" y="127" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">⛽ PSO Station</text>
+
+          {/* Shell Station */}
+          <rect x="430" y="110" width="70" height="18" rx="4" fill="#b91c1c" opacity="0.85" />
+          <text x="465" y="122" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">⛽ Shell Express</text>
+
+          {/* NH&MP Motorway Police Post */}
+          <rect x="80" y="270" width="86" height="18" rx="4" fill="#1e3a8a" opacity="0.85" />
+          <text x="123" y="282" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">🚓 NH&MP 130 Post</text>
+
+          {/* Rescue 1122 Post */}
+          <rect x="400" y="310" width="80" height="18" rx="4" fill="#c2410c" opacity="0.85" />
+          <text x="440" y="322" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">🚑 1122 Base</text>
+        </g>
+
+        {/* Distance Range Rings (1km, 3km, 5km) */}
         <circle cx={centerX} cy={centerY} r="65" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
         <text x={centerX + 68} y={centerY - 5} fill="#f59e0b" fontSize="9" opacity="0.6">1 km</text>
 
@@ -126,29 +145,28 @@ export default function InteractiveRadarMap({
 
         {/* Center: User Stranded Location Marker */}
         <g transform={`translate(${centerX}, ${centerY})`}>
-          {/* Animated ping rings */}
           <circle r="22" fill="#ef4444" opacity="0.25" className="animate-ping" />
           <circle r="14" fill="#ef4444" opacity="0.4" />
           <circle r="7" fill="#f87171" stroke="#ffffff" strokeWidth="2" />
           
-          <rect x="-60" y="-38" width="120" height="22" rx="6" fill="#0f172a" stroke="#ef4444" strokeWidth="1" />
+          <rect x="-65" y="-38" width="130" height="22" rx="6" fill="#0f172a" stroke="#ef4444" strokeWidth="1.2" />
           <text x="0" y="-24" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">
-            📍 YOU (STRANDED)
+            📍 YOU (STRANDED SOS)
           </text>
         </g>
 
-        {/* Active Delivery Rider Marker (animated along path) */}
+        {/* Active Delivery Rider Marker */}
         {activeDelivery && activeRiderData ? (
           <g transform={`translate(${activeRiderCurrentX}, ${activeRiderCurrentY})`}>
             <circle r="20" fill="#f59e0b" opacity="0.3" className="animate-ping" />
             <circle r="12" fill="#f59e0b" stroke="#ffffff" strokeWidth="2" />
-            <rect x="-65" y="-38" width="130" height="22" rx="6" fill="#0f172a" stroke="#f59e0b" strokeWidth="1.5" />
+            <rect x="-70" y="-38" width="140" height="22" rx="6" fill="#0f172a" stroke="#f59e0b" strokeWidth="1.5" />
             <text x="0" y="-24" fill="#fef08a" fontSize="9" fontWeight="bold" textAnchor="middle">
-              🏍️ {activeRiderData.name.split(' ')[0]} EN ROUTE ({Math.max(1, Math.round(activeRiderData.etaMinutes * (1 - enRouteProgress)))}m)
+              🏍️ {activeRiderData.name.split(' ')[0]} EN ROUTE (~{Math.max(1, Math.round(activeRiderData.etaMinutes * (1 - enRouteProgress)))}m)
             </text>
           </g>
         ) : (
-          /* Normal Nearby Riders Markers */
+          /* Nearby Verified Riders */
           riderPositions.map((rider) => {
             const isSelected = selectedRider?.id === rider.id;
             return (
@@ -168,11 +186,10 @@ export default function InteractiveRadarMap({
                   strokeWidth="2" 
                 />
                 
-                {/* Rider Tag */}
                 <rect 
-                  x="-45" 
+                  x="-48" 
                   y="-32" 
-                  width="90" 
+                  width="96" 
                   height="20" 
                   rx="5" 
                   fill={isSelected ? "#1e293b" : "#0f172a"} 
@@ -187,7 +204,7 @@ export default function InteractiveRadarMap({
                   fontWeight={isSelected ? "bold" : "normal"} 
                   textAnchor="middle"
                 >
-                  ⚡ {rider.name.split(' ')[0]} &bull; {rider.etaMinutes}m
+                  ⚡ {rider.name.split(' ')[0]} &bull; {rider.etaMinutes}m &bull; Rs.{rider.baseDeliveryFee}
                 </text>
               </g>
             );
@@ -196,32 +213,32 @@ export default function InteractiveRadarMap({
       </svg>
 
       {/* Floating Status Badge Top Left */}
-      <div className="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 rounded-2xl px-3.5 py-2 flex items-center gap-3 shadow-lg">
+      <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-md border border-slate-700/60 rounded-2xl px-3.5 py-2 flex items-center gap-3 shadow-lg">
         <div className="flex h-3 w-3 relative">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-200">Emergency Radar Active</span>
-            <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded font-mono">LIVE GPS</span>
+            <span className="text-xs font-bold text-slate-200">Pakistan Roadside Radar</span>
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded font-mono">OGRA SEALED</span>
           </div>
           <p className="text-[11px] text-slate-400">
-            {riders.length} Certified Mobile Tankers in 5 km radius
+            {riders.length} Certified Couriers within patrol sector
           </p>
         </div>
       </div>
 
       {/* Floating Coordinates Tag Bottom Left */}
-      <div className="absolute bottom-4 left-4 hidden sm:flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-1.5 text-[11px] text-slate-400 font-mono">
+      <div className="absolute bottom-4 left-4 hidden sm:flex items-center gap-2 bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-1.5 text-[11px] text-slate-400 font-mono">
         <Navigation className="w-3.5 h-3.5 text-amber-400" />
-        <span>GPS: {userLocation.address || "Highway M-9 Milepost 34, Shoulder"}</span>
+        <span>📍 {userLocation.address || "Roadside GPS Sector"}</span>
       </div>
 
       {/* Radar Scan Indicator Bottom Right */}
-      <div className="absolute bottom-4 right-4 bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs text-amber-300">
+      <div className="absolute bottom-4 right-4 bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-1.5 flex items-center gap-2 text-xs text-amber-300">
         <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
-        <span className="font-semibold text-[11px]">Real-Time Dispatch Pulse</span>
+        <span className="font-semibold text-[11px]">24/7 Patrol Channel</span>
       </div>
 
     </div>
