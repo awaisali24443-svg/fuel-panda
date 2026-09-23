@@ -1,5 +1,9 @@
 # ⛽ Fuel Panda — Roadside Emergency On-Demand Fuel Delivery
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-awaisali24443--svg.github.io%2Ffuel--panda-success?style=for-the-badge&logo=github)](https://awaisali24443-svg.github.io/fuel-panda/)
+
+> 🚀 **Live Preview Available Now:** [https://awaisali24443-svg.github.io/fuel-panda/](https://awaisali24443-svg.github.io/fuel-panda/)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-amber.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-purple.svg)](https://vitejs.dev/)
